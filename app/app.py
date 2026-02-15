@@ -7,6 +7,7 @@ from app.images import imagekit
 import shutil
 import tempfile
 import os
+import uuid
 
 @asynccontextmanager
 async def lifespan(app:FastAPI):
@@ -60,7 +61,7 @@ async def get_feed(
     session: AsyncSession= Depends(get_async_session)
 ):
     result= await session.execute(select(Post).order_by(Post.created_at.desc()))
-    posts= [row[0] for row in result.all()]
+    posts= result.scalars().all()
     
     posts_data=[]
     for post in posts:
@@ -74,3 +75,25 @@ async def get_feed(
         })
     
     return {"posts":posts_data}
+
+@app.delete('/posts/{post_id}')
+async def delete_post(
+    post_id: str,
+    session: AsyncSession = Depends(get_async_session)
+):
+    try:
+        post_id=uuid.UUID(post_id)
+
+        result = await session.execute(select(Post).where(Post.id==post_id))
+        post = result.scalar().first()
+
+        if not post:
+            raise HTTPException(status_code=404, detail="Post not found")
+        
+        session.delete(post)
+        await session.commit()
+
+        return {"success": True, "message": "Post deleted successfully"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
