@@ -9,6 +9,7 @@ dependencies = [
     "fastapi>=0.129.0",
     "fastapi-users-db-sqlalchemy>=7.0.0",
     "fastapi-users[sqlalchemy]>=15.0.4",
+    "imagekitio[aiohttp,standard]>=5.2.0",
     "python-dotenv>=1.2.1",
     "uvicorn[standard]>=0.40.0",
 ]

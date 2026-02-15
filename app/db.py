@@ -14,7 +14,7 @@ class Base(DeclarativeBase):
     pass
 
 class Post(Base):
-    __table__="posts"
+    __tablename__="posts"
 
     id=Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     caption=Column(Text)
@@ -30,6 +30,6 @@ async def create_db_and_tables():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-async def get_async_session() ->AsyncGenerator[AsyncSession,None]:
+async def get_async_session() -> AsyncGenerator[AsyncSession,None]:
     async with async_sessionmaker() as session:
         yield session
