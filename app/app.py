@@ -1,4 +1,5 @@
 from fastapi import FastAPI, UploadFile, File, Form,Depends, HTTPException
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import Post, create_db_and_tables, get_async_session
 from contextlib import asynccontextmanager
@@ -53,3 +54,23 @@ async def upload_file(
         if temp_file_path and os.path.exists(temp_file_path):
             os.unlink(temp_file_path)
         file.file.close()
+
+@app.get('/feed')
+async def get_feed(
+    session: AsyncSession= Depends(get_async_session)
+):
+    result= await session.execute(select(Post).order_by(Post.created_at.desc()))
+    posts= [row[0] for row in result.all()]
+    
+    posts_data=[]
+    for post in posts:
+        posts_data.append({
+            "id":str(post.id),
+            "caption":post.caption,
+            "url":post.url,
+            "file_name":post.file_name,
+            "file_type":post.file_type,
+            "created_at":post.created_at.isoformat()
+        })
+    
+    return {"posts":posts_data}
