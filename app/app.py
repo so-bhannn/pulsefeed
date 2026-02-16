@@ -13,13 +13,14 @@ import uuid
 async def lifespan(app:FastAPI):
     await create_db_and_tables()
     yield
+
 app=FastAPI(lifespan=lifespan)
 
 
 @app.post('/upload')
 async def upload_file(
     file: UploadFile = File(...),
-    caption: str= Form(""),
+    caption: str = Form(""),
     session: AsyncSession = Depends(get_async_session)
 ):
     temp_file_path=None
