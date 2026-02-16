@@ -1,12 +1,13 @@
 from fastapi import Depends
 from fastapi_users.db import SQLAlchemyBaseUserTable
 from collections.abc import AsyncGenerator
+from enum import StrEnum
 import uuid
-
-from sqlalchemy import Column, Text, String, DateTime, ForeignKey
+from typing import Optional
+from sqlalchemy import Text, String, DateTime, ForeignKey, UUID, Enum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.asyncio  import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.orm import DeclarativeBase, relationship
+from sqlalchemy.orm import DeclarativeBase, relationship, Mapped, mapped_column
 from datetime import datetime,timezone
 
 
@@ -15,21 +16,29 @@ DATABASE_URL="sqlite+aiosqlite:///./test.db"
 class Base(DeclarativeBase):
     pass
 
-class User(SQLAlchemyBaseUserTable, Base):
-    posts= relationship(argument="Post", back_populates="user")
+class FileCategory(StrEnum):
+    IMAGE="image"
+    VIDEO="video"
 
 class Post(Base):
     __tablename__="posts"
 
-    id=Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user=Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
-    caption=Column(Text)
-    url=Column(Text, nullable=False)
-    file_name=Column(String, nullable=False)
-    file_type=Column(String, nullable=False)
-    created_at=Column(DateTime, default=datetime.now(timezone.utc))
+    id: Mapped[uuid.UUID] =mapped_column(UUID, primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID]=mapped_column(UUID, ForeignKey("user.id"), nullable=False)
 
-    user=relationship(argument="User", back_populates="posts")
+    caption: Mapped[Optional[str]]=mapped_column(Text)
+    url: Mapped[str]=mapped_column(Text, nullable=False)
+    file_name: Mapped[str] = mapped_column(String, nullable=False)
+    file_type: Mapped[FileCategory] = mapped_column(
+        Enum(FileCategory,native_enum=False),
+        default=FileCategory.IMAGE
+    )
+    created_at:Mapped[DateTime]=mapped_column(
+        DateTime,
+        default=lambda:datetime.now(timezone.utc)
+        )
+    
+    user:Mapped["User"]=relationship(back_populates="posts")
 
 engine=create_async_engine(DATABASE_URL)
 async_sessionmaker=async_sessionmaker(
