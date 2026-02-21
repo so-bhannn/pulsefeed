@@ -4,7 +4,7 @@ from collections.abc import AsyncGenerator
 from enum import StrEnum
 import uuid
 from typing import Optional
-from sqlalchemy import Text, String, DateTime, ForeignKey, UUID, Enum, Boolean
+from sqlalchemy import Text, String, DateTime, ForeignKey, Uuid, Enum, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.asyncio  import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, relationship, Mapped, mapped_column
@@ -20,8 +20,8 @@ class User(Base):
     __tablename__="users"
 
     id: Mapped[uuid.UUID]=mapped_column(UUID, primary_key=True, default=uuid.uuid4)
-    username: Mapped[str]=mapped_column(String,nullable=False)
-    email:Mapped[str]=mapped_column(String,nullable=False)
+    username: Mapped[str]=mapped_column(String,unique=True, nullable=False)
+    email:Mapped[str]=mapped_column(String,unique=True, nullable=False)
     hashed_password:Mapped[str]=mapped_column(String, nullable=False)
 
     first_name: Mapped[str]=mapped_column(String, nullable=False)
