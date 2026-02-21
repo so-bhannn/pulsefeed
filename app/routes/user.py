@@ -3,6 +3,7 @@ from pydantic import EmailStr
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+import uuid
 
 from app.db import get_async_session, User
 from app.schema import CreateUser,UserOut
@@ -17,7 +18,9 @@ async def get_user_endpoint(email:EmailStr, session:AsyncSession=Depends(get_asy
         user=result.scalars().first()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
-        return UserOut.model_validate(user)
+        user_data=UserOut.model_validate(user)
+        user_data.id = str(user.id)
+        return user_data
 
     except Exception as e:
         print(str(e))
@@ -34,7 +37,7 @@ async def create_user_endpoint(details:CreateUser, session:AsyncSession=Depends(
         await session.commit()
         await session.refresh(user)
 
-        return UserOut(user)
+        return UserOut.model_validate(user)
     
     except IntegrityError:
         session.rollback()

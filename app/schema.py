@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_serializer
+from uuid import UUID
 class CreateUser(BaseModel):
     username:str
     email:str
@@ -7,7 +8,7 @@ class CreateUser(BaseModel):
     last_name:str | None=None
 
 class UserOut(BaseModel):
-    id: str
+    id: UUID
     username: str
     email: str
     first_name : str
@@ -15,3 +16,7 @@ class UserOut(BaseModel):
 
     class Config:
         from_attributes=True
+
+    @field_serializer('id')
+    def serialize_id(self, value:UUID)->str:
+        return str(value)

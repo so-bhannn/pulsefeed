@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import Post, create_db_and_tables, get_async_session
 from contextlib import asynccontextmanager
 from app.images import imagekit
+from app.routes.user import router
 import shutil
 import tempfile
 import os
@@ -16,6 +17,7 @@ async def lifespan(app:FastAPI):
 
 app=FastAPI(lifespan=lifespan)
 
+app.include_router(router)
 
 @app.post('/upload')
 async def upload_file(

@@ -3,7 +3,7 @@ from fastapi_users.db import SQLAlchemyBaseUserTable
 from collections.abc import AsyncGenerator
 from enum import StrEnum
 import uuid
-from typing import Optional
+from typing import Optional, List
 from sqlalchemy import Text, String, DateTime, ForeignKey, Uuid, Enum, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.asyncio  import AsyncSession, create_async_engine, async_sessionmaker
@@ -29,6 +29,8 @@ class User(Base):
 
     is_active:Mapped[Optional[bool]]=mapped_column(Boolean, default=True)
 
+    posts:Mapped[List["Post"]] = relationship(back_populates="author",cascade='all, delete-orphan')
+
 class FileCategory(StrEnum):
     IMAGE="image"
     VIDEO="video"
@@ -51,7 +53,7 @@ class Post(Base):
         default=lambda:datetime.now(timezone.utc)
         )
     
-    user:Mapped["User"]=relationship(back_populates="posts")
+    author:Mapped["User"]=relationship(back_populates="posts")
 
 engine=create_async_engine(DATABASE_URL)
 async_sessionmaker=async_sessionmaker(
