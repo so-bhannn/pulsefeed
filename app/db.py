@@ -29,7 +29,6 @@ class User(Base):
 
     is_active:Mapped[Optional[bool]]=mapped_column(Boolean, default=True)
 
-
 class FileCategory(StrEnum):
     IMAGE="image"
     VIDEO="video"
